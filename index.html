@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Noxus — Future of Agriculture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --ink:#050c07;--forest:#0a1f0e;--emerald:#1a6b35;--jade:#2dbd6e;
+  --gold:#c9a84c;--amber:#f0c060;--cream:#f0ece0;--mist:rgba(240,236,224,0.05);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--cream);font-family:'DM Sans',sans-serif;overflow-x:hidden;cursor:none;}
+@media(hover:none){body{cursor:auto;}}
+::selection{background:var(--jade);color:var(--ink);}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:var(--ink);}::-webkit-scrollbar-thumb{background:var(--jade);border-radius:2px;}
+
+/* ══ CURSOR ══ */
+#nx-dot{position:fixed;width:7px;height:7px;border-radius:50%;background:var(--jade);pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:width .15s,height .15s,background .18s;box-shadow:0 0 10px rgba(45,189,110,.8),0 0 22px rgba(45,189,110,.3);}
+#nx-ch{position:fixed;width:20px;height:1px;background:rgba(45,189,110,.55);pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:opacity .2s;}
+#nx-cv{position:fixed;width:1px;height:20px;background:rgba(45,189,110,.55);pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:opacity .2s;}
+body.cur-hov #nx-dot{width:44px;height:44px;background:rgba(45,189,110,.1);border:1px solid rgba(45,189,110,.38);box-shadow:none;}
+body.cur-hov #nx-ch,body.cur-hov #nx-cv{opacity:0;}
+body.cur-click #nx-dot{width:18px;height:18px;background:rgba(45,189,110,.35);}
+@media(hover:none){#nx-dot,#nx-ch,#nx-cv{display:none;}}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;width:100%;z-index:1000;padding:1.4rem 5%;display:flex;justify-content:space-between;align-items:center;transition:all .4s;}
+nav.scrolled{background:rgba(5,12,7,.94);backdrop-filter:blur(24px);padding:1rem 5%;border-bottom:1px solid rgba(45,189,110,.1);}
+.logo{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:700;letter-spacing:.05em;color:var(--cream);text-decoration:none;}
+.logo span{color:var(--jade);}
+.nav-links{display:flex;gap:2.5rem;list-style:none;align-items:center;}
+.nav-links a{color:rgba(240,236,224,.7);text-decoration:none;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;transition:color .25s;position:relative;}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--jade);transition:width .3s;}
+.nav-links a:hover{color:var(--cream);}.nav-links a:hover::after{width:100%;}
+.nav-cta{border:1px solid var(--jade)!important;color:var(--jade)!important;padding:.45rem 1.3rem;border-radius:2px;}
+.nav-cta:hover{background:var(--jade)!important;color:var(--ink)!important;}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:1001;}
+.hamburger span{width:26px;height:1.5px;background:var(--cream);transition:all .3s;display:block;}
+.mobile-menu{display:none;position:fixed;inset:0;background:var(--ink);z-index:999;flex-direction:column;justify-content:center;align-items:center;gap:2.5rem;}
+.mobile-menu.open{display:flex;}
+.mobile-menu a{color:var(--cream);text-decoration:none;font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:300;transition:color .2s;}
+.mobile-menu a:hover{color:var(--jade);}
+.mob-close{position:absolute;top:2rem;right:5%;font-size:1.4rem;color:rgba(240,236,224,.5);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
+@media(max-width:860px){.nav-links{display:none;}.hamburger{display:flex;}}
+
+/* ── HERO STAGE (scroll-to-fly) ── */
+#hero-stage{height:600vh;position:relative;}
+#hero{position:sticky;top:0;height:100vh;min-height:620px;display:flex;align-items:center;overflow:hidden;}
+/* Eagle WebP sequence — full-bleed background */
+#eagle-seq{
+  position:absolute;inset:0;width:100%;height:100%;z-index:0;
+  pointer-events:none;
+}
+/* subtle left-side vignette so text stays legible */
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(100deg,rgba(3,10,5,.92) 0%,rgba(4,12,6,.72) 42%,rgba(4,12,6,.22) 68%,rgba(4,12,6,.08) 100%);z-index:3;}
+.hero-content{position:relative;z-index:4;padding:0 8%;max-width:1400px;margin:0 auto;width:100%;}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(45,189,110,.08);border:1px solid rgba(45,189,110,.25);padding:.35rem 1rem;border-radius:20px;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--jade);margin-bottom:1.8rem;opacity:0;animation:fadeUp .8s .3s forwards;}
+.pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--jade);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.5);}}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(3rem,8vw,7.5rem);font-weight:300;line-height:1.03;letter-spacing:-.01em;margin-bottom:1.4rem;}
+.hero-title em{font-style:italic;color:var(--jade);}
+.hero-title .ln{overflow:hidden;display:block;}
+.hero-title .ln-i{display:block;opacity:0;transform:translateY(105%);animation:lnUp .95s cubic-bezier(.16,1,.3,1) forwards;}
+.hero-title .ln:nth-child(1) .ln-i{animation-delay:.45s;}
+.hero-title .ln:nth-child(2) .ln-i{animation-delay:.62s;}
+.hero-title .ln:nth-child(3) .ln-i{animation-delay:.79s;}
+@keyframes lnUp{to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+.hero-sub{font-size:clamp(.9rem,1.6vw,1.08rem);font-weight:300;color:rgba(240,236,224,.62);max-width:480px;line-height:1.8;margin-bottom:2.8rem;opacity:0;animation:fadeUp .8s 1s forwards;}
+.hero-actions{display:flex;gap:1.2rem;flex-wrap:wrap;opacity:0;animation:fadeUp .8s 1.15s forwards;}
+.btn-primary{display:inline-flex;align-items:center;gap:.7rem;background:var(--jade);color:var(--ink);padding:.85rem 2.2rem;font-size:.83rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border-radius:2px;transition:all .3s;position:relative;overflow:hidden;}
+.btn-primary::before{content:'';position:absolute;inset:0;background:var(--amber);transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.16,1,.3,1);}
+.btn-primary:hover::before{transform:scaleX(1);}
+.btn-primary span,.btn-primary b{position:relative;z-index:1;}
+.btn-secondary{display:inline-flex;align-items:center;gap:.7rem;background:transparent;color:var(--cream);padding:.85rem 2.2rem;font-size:.83rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(240,236,224,.2);border-radius:2px;transition:all .3s;}
+.btn-secondary:hover{border-color:var(--jade);color:var(--jade);}
+.hero-scroll{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:0;animation:fadeUp .8s 1.6s forwards;z-index:5;}
+.hero-scroll span{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,236,224,.35);}
+.scroll-ln{width:1px;height:50px;background:linear-gradient(to bottom,var(--jade),transparent);animation:scrl 1.6s ease infinite;}
+@keyframes scrl{0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}51%{transform-origin:bottom;}100%{transform:scaleY(0);transform-origin:bottom;}}
+.hero-stats{position:absolute;right:5%;bottom:3rem;display:flex;gap:2.5rem;z-index:5;opacity:0;animation:fadeUp .8s 1.3s forwards;}
+.hero-stat .num{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;color:var(--jade);line-height:1;}
+.hero-stat .lbl{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(240,236,224,.38);margin-top:.2rem;}
+@media(max-width:680px){.hero-stats{display:none;}.hero-content{padding:0 6%;}}
+
+/* ── MARQUEE ── */
+.marquee-wrap{overflow:hidden;border-top:1px solid rgba(45,189,110,.1);border-bottom:1px solid rgba(45,189,110,.1);padding:1.1rem 0;background:rgba(45,189,110,.02);}
+.marquee-track{display:flex;animation:mq 24s linear infinite;white-space:nowrap;}
+.marquee-track span{font-family:'Cormorant Garamond',serif;font-size:1rem;letter-spacing:.07em;color:rgba(240,236,224,.3);padding:0 2rem;}
+.marquee-track .sep{color:var(--jade);}
+@keyframes mq{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* ── COMMONS ── */
+section{padding:7rem 5%;position:relative;}
+.section-label{display:inline-flex;align-items:center;gap:.7rem;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--jade);}
+.section-label::before{content:'';width:26px;height:1px;background:var(--jade);}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4.8vw,3.8rem);font-weight:300;line-height:1.15;}
+.section-title em{font-style:italic;color:var(--jade);}
+.section-title strong{font-weight:600;}
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);}
+.reveal-l{opacity:0;transform:translateX(-48px);transition:opacity .85s .1s cubic-bezier(.16,1,.3,1),transform .85s .1s cubic-bezier(.16,1,.3,1);}
+.reveal-r{opacity:0;transform:translateX(48px);transition:opacity .85s .1s cubic-bezier(.16,1,.3,1),transform .85s .1s cubic-bezier(.16,1,.3,1);}
+.reveal.vis,.reveal-l.vis,.reveal-r.vis{opacity:1;transform:none;}
+
+/* ── ABOUT ── */
+#about{background:var(--ink);}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;max-width:1180px;margin:0 auto;}
+.about-visual{position:relative;height:540px;}
+.about-canvas-wrap{width:100%;height:100%;border-radius:6px;overflow:hidden;background:linear-gradient(145deg,#071a0c,#143d20,#0a2515);}
+#about-canvas{width:100%;height:100%;display:block;}
+.about-year-badge{position:absolute;bottom:-1.5rem;right:-1.5rem;background:var(--forest);border:1px solid rgba(45,189,110,.18);padding:1.6rem 2rem;border-radius:4px;min-width:200px;}
+.about-year-badge .yr{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:600;color:var(--jade);line-height:1;}
+.about-year-badge p{font-size:.76rem;color:rgba(240,236,224,.5);margin-top:.3rem;line-height:1.5;}
+.about-text p{font-size:1rem;font-weight:300;line-height:1.88;color:rgba(240,236,224,.68);margin-bottom:1.4rem;}
+.about-pillars{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem;}
+.pillar{background:var(--mist);border:1px solid rgba(45,189,110,.1);padding:1.2rem;border-radius:4px;transition:border-color .3s;}
+.pillar:hover{border-color:rgba(45,189,110,.32);}
+.pillar-img{width:100%;height:60px;object-fit:cover;border-radius:3px;margin-bottom:.6rem;opacity:.7;filter:saturate(.85) brightness(.82);}
+.pillar h4{font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;color:var(--jade);margin-bottom:.25rem;}
+.pillar p{font-size:.78rem;color:rgba(240,236,224,.48);line-height:1.55;}
+@media(max-width:880px){.about-grid{grid-template-columns:1fr;}.about-visual{height:370px;}}
+
+/* ── SERVICES ── */
+#services{background:linear-gradient(180deg,var(--ink) 0%,var(--forest) 100%);}
+.services-header{max-width:1180px;margin:0 auto 3.8rem;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:2rem;}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;background:rgba(45,189,110,.07);max-width:1180px;margin:0 auto;border-radius:6px;overflow:hidden;}
+.svc-card{background:var(--ink);overflow:hidden;cursor:pointer;transition:background .3s;position:relative;}
+.svc-card:hover{background:#071510;}
+.svc-img{width:100%;height:180px;object-fit:cover;display:block;filter:brightness(.62) saturate(.8);transition:filter .4s;}
+.svc-card:hover .svc-img{filter:brightness(.8) saturate(1.05);}
+.svc-body{padding:1.8rem 2rem 2rem;}
+.svc-num{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:300;color:rgba(45,189,110,.1);line-height:1;float:right;margin-left:.5rem;transition:color .3s;}
+.svc-card:hover .svc-num{color:rgba(45,189,110,.22);}
+.svc-card h3{font-family:'Syne',sans-serif;font-size:1.08rem;font-weight:600;color:var(--cream);margin-bottom:.7rem;}
+.svc-card p{font-size:.83rem;color:rgba(240,236,224,.48);line-height:1.78;}
+.svc-arrow{margin-top:1.6rem;width:30px;height:30px;border-radius:50%;border:1px solid rgba(45,189,110,.2);display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--jade);transition:all .3s;}
+.svc-card:hover .svc-arrow{background:var(--jade);color:var(--ink);border-color:var(--jade);}
+@media(max-width:780px){.services-grid{grid-template-columns:1fr;}}
+@media(max-width:1050px) and (min-width:781px){.services-grid{grid-template-columns:1fr 1fr;}}
+
+/* ── STATS ── */
+#stats{padding:5rem 5%;background:var(--forest);border-top:1px solid rgba(45,189,110,.09);border-bottom:1px solid rgba(45,189,110,.09);}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5px;background:rgba(45,189,110,.08);max-width:1100px;margin:0 auto;border-radius:4px;overflow:hidden;}
+.stat-cell{background:var(--forest);padding:3rem 2.5rem;text-align:center;}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:clamp(2.6rem,5vw,4.2rem);font-weight:600;color:var(--jade);line-height:1;display:block;}
+.stat-sfx{color:var(--amber);}
+.stat-lbl{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(240,236,224,.38);margin-top:.6rem;display:block;}
+@media(max-width:680px){.stats-grid{grid-template-columns:1fr 1fr;}}
+
+/* ── TECHNOLOGY ── */
+#technology{background:var(--ink);overflow:hidden;}
+.tech-split{display:grid;grid-template-columns:1fr 1fr;gap:5.5rem;align-items:center;max-width:1180px;margin:0 auto;}
+.tech-globe-wrap{height:480px;border-radius:6px;overflow:hidden;background:radial-gradient(ellipse at center,rgba(10,50,25,.9) 0%,#030906 75%);}
+#tech-canvas{width:100%;height:100%;display:block;}
+.tech-list{display:flex;flex-direction:column;gap:1.3rem;margin-top:2.5rem;}
+.tech-item{display:flex;gap:1.2rem;align-items:flex-start;padding:1.4rem;border:1px solid rgba(45,189,110,.1);border-radius:4px;transition:border-color .3s,background .3s;}
+.tech-item:hover{border-color:rgba(45,189,110,.28);background:rgba(45,189,110,.03);}
+.tech-item-img{width:42px;height:42px;min-width:42px;border-radius:4px;object-fit:cover;filter:brightness(.7) saturate(.8);transition:filter .3s;}
+.tech-item:hover .tech-item-img{filter:brightness(.9) saturate(1.1);}
+.tech-item h4{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:600;color:var(--cream);margin-bottom:.25rem;}
+.tech-item p{font-size:.79rem;color:rgba(240,236,224,.48);line-height:1.65;}
+.tech-tags{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1.8rem;}
+.tech-tag{background:rgba(45,189,110,.07);border:1px solid rgba(45,189,110,.14);padding:.32rem .85rem;border-radius:20px;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,236,224,.5);transition:all .3s;}
+.tech-tag:hover{background:rgba(45,189,110,.14);color:var(--jade);}
+@media(max-width:880px){.tech-split{grid-template-columns:1fr;}.tech-globe-wrap{height:320px;}}
+
+/* ── PRODUCTS ── */
+#products{background:linear-gradient(180deg,var(--ink) 0%,#030803 100%);}
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.8rem;max-width:1180px;margin:3.2rem auto 0;}
+.prod-card{background:var(--forest);border:1px solid rgba(45,189,110,.1);border-radius:6px;overflow:hidden;transition:transform .4s cubic-bezier(.16,1,.3,1),border-color .3s;}
+.prod-card:hover{transform:translateY(-8px);border-color:rgba(45,189,110,.3);}
+.prod-img{width:100%;height:220px;object-fit:cover;display:block;filter:brightness(.72) saturate(.82);transition:filter .4s;}
+.prod-card:hover .prod-img{filter:brightness(.88) saturate(1.05);}
+.prod-body{padding:1.8rem;}
+.prod-tag{display:inline-block;background:rgba(45,189,110,.1);color:var(--jade);font-size:.63rem;letter-spacing:.15em;text-transform:uppercase;padding:.22rem .7rem;border-radius:2px;margin-bottom:.8rem;}
+.prod-card h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:600;color:var(--cream);margin-bottom:.55rem;}
+.prod-card p{font-size:.82rem;color:rgba(240,236,224,.5);line-height:1.72;margin-bottom:1.1rem;}
+.prod-feats{list-style:none;display:flex;flex-direction:column;gap:.38rem;}
+.prod-feats li{font-size:.75rem;color:rgba(240,236,224,.42);display:flex;align-items:center;gap:.4rem;}
+.prod-feats li::before{content:'▸';color:var(--jade);font-size:.68rem;}
+.prod-footer{padding:1.1rem 1.8rem;border-top:1px solid rgba(45,189,110,.07);display:flex;justify-content:space-between;align-items:center;}
+.prod-price{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--amber);}
+.prod-btn{background:transparent;border:1px solid rgba(45,189,110,.28);color:var(--jade);padding:.38rem 1rem;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .3s;font-family:'DM Sans',sans-serif;}
+.prod-btn:hover{background:var(--jade);color:var(--ink);border-color:var(--jade);}
+@media(max-width:880px){.products-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:580px){.products-grid{grid-template-columns:1fr;}}
+
+/* ── MISSION ── */
+#mission{padding:10rem 5%;text-align:center;background:var(--ink);position:relative;overflow:hidden;}
+#mission-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.5;}
+.mission-inner{position:relative;z-index:1;max-width:880px;margin:0 auto;}
+.mission-quote{font-family:'Cormorant Garamond',serif;font-size:clamp(1.7rem,3.8vw,3.1rem);font-weight:300;font-style:italic;line-height:1.42;color:var(--cream);margin-bottom:2rem;}
+.mission-quote em{color:var(--jade);font-style:normal;font-weight:600;}
+.mission-author{font-size:.76rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,236,224,.32);}
+
+/* ── TEAM ── */
+#team{background:var(--forest);}
+.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.8rem;max-width:1180px;margin:3rem auto 0;}
+.team-card{border-radius:4px;overflow:hidden;cursor:pointer;position:relative;}
+.team-photo{width:100%;height:320px;object-fit:cover;object-position:top;display:block;filter:grayscale(.35) brightness(.82);transition:filter .4s;}
+.team-card:hover .team-photo{filter:grayscale(0) brightness(.9);}
+.team-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,12,7,.96) 0%,rgba(5,12,7,.3) 60%,transparent 100%);}
+.team-info{position:absolute;bottom:0;left:0;right:0;padding:1.5rem;transform:translateY(40%);transition:transform .4s cubic-bezier(.16,1,.3,1);}
+.team-card:hover .team-info{transform:translateY(0);}
+.team-name{font-family:'Syne',sans-serif;font-size:1.03rem;font-weight:600;color:var(--cream);}
+.team-role{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--jade);margin-top:.18rem;}
+.team-bio{font-size:.77rem;color:rgba(240,236,224,.52);line-height:1.65;margin-top:.65rem;opacity:0;transition:opacity .3s .1s;}
+.team-card:hover .team-bio{opacity:1;}
+.team-socials{display:flex;gap:.45rem;margin-top:.75rem;opacity:0;transition:opacity .3s .15s;}
+.team-card:hover .team-socials{opacity:1;}
+.team-socials a{width:26px;height:26px;border-radius:50%;border:1px solid rgba(45,189,110,.3);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--jade);text-decoration:none;transition:all .22s;}
+.team-socials a:hover{background:var(--jade);color:var(--ink);}
+@media(max-width:880px){.team-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:500px){.team-grid{grid-template-columns:1fr;}}
+
+/* ── TESTIMONIALS ── */
+#testimonials{background:var(--ink);padding:7rem 5%;}
+.testi-wrap{max-width:780px;margin:3rem auto 0;}
+.testi-slide{display:none;}
+.testi-slide.active{display:block;}
+.testi-text{font-family:'Cormorant Garamond',serif;font-size:clamp(1.25rem,2.4vw,1.75rem);font-weight:300;font-style:italic;line-height:1.6;color:var(--cream);margin-bottom:2rem;text-align:center;}
+.testi-author{display:flex;align-items:center;justify-content:center;gap:1rem;}
+.testi-av{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid rgba(45,189,110,.25);}
+.testi-name{font-family:'Syne',sans-serif;font-size:.87rem;font-weight:600;color:var(--cream);}
+.testi-co{font-size:.7rem;color:rgba(240,236,224,.38);}
+.testi-dots{display:flex;justify-content:center;gap:.55rem;margin-top:2.5rem;}
+.testi-dot{width:6px;height:6px;border-radius:50%;background:rgba(45,189,110,.2);cursor:pointer;transition:all .3s;}
+.testi-dot.active{background:var(--jade);width:22px;border-radius:3px;}
+.testi-ctrls{display:flex;justify-content:center;gap:1rem;margin-top:1.4rem;}
+.testi-btn{width:40px;height:40px;border-radius:50%;border:1px solid rgba(45,189,110,.18);background:transparent;color:var(--jade);cursor:pointer;font-size:1rem;transition:all .3s;display:flex;align-items:center;justify-content:center;}
+.testi-btn:hover{background:var(--jade);color:var(--ink);border-color:var(--jade);}
+
+/* ── CTA ── */
+#cta{padding:8rem 5%;background:linear-gradient(135deg,#061710 0%,#0e3320 50%,#061710 100%);position:relative;overflow:hidden;}
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:580px;height:580px;border-radius:50%;background:radial-gradient(circle,rgba(45,189,110,.1) 0%,transparent 70%);}
+.cta-inner{max-width:680px;margin:0 auto;text-align:center;position:relative;z-index:1;}
+.cta-inner p{font-size:.98rem;color:rgba(240,236,224,.58);line-height:1.82;margin-bottom:2.5rem;}
+.cta-form{display:flex;gap:.8rem;margin-top:1.8rem;max-width:460px;margin-left:auto;margin-right:auto;flex-wrap:wrap;}
+.cta-input{flex:1;min-width:190px;background:rgba(240,236,224,.05);border:1px solid rgba(240,236,224,.14);color:var(--cream);padding:.82rem 1.1rem;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:border-color .3s;}
+.cta-input:focus{border-color:var(--jade);}
+.cta-input::placeholder{color:rgba(240,236,224,.28);}
+
+/* ── CONTACT ── */
+#contact{background:var(--ink);padding:7rem 5%;}
+.contact-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:5rem;max-width:1080px;margin:3rem auto 0;align-items:start;}
+.contact-info h3{font-family:'Cormorant Garamond',serif;font-size:1.75rem;font-weight:300;margin-bottom:1rem;}
+.contact-info>p{font-size:.86rem;color:rgba(240,236,224,.52);line-height:1.82;margin-bottom:2rem;}
+.c-details{display:flex;flex-direction:column;gap:1.2rem;}
+.c-detail{display:flex;align-items:flex-start;gap:.85rem;}
+.c-icon{width:36px;height:36px;min-width:36px;border-radius:4px;object-fit:cover;filter:brightness(.55) saturate(.7);}
+.c-text h4{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--jade);margin-bottom:.18rem;}
+.c-text p{font-size:.82rem;color:rgba(240,236,224,.52);}
+.contact-form{display:flex;flex-direction:column;gap:1.15rem;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1.15rem;}
+.fg{display:flex;flex-direction:column;gap:.35rem;}
+.fg label{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,236,224,.38);}
+.fc{background:rgba(240,236,224,.03);border:1px solid rgba(240,236,224,.09);color:var(--cream);padding:.82rem 1.05rem;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:border-color .3s,background .3s;width:100%;}
+.fc:focus{border-color:var(--jade);background:rgba(45,189,110,.04);}
+.fc::placeholder{color:rgba(240,236,224,.22);}
+textarea.fc{resize:vertical;min-height:125px;}
+.submit-btn{background:var(--jade);color:var(--ink);border:none;padding:.9rem 2.2rem;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .3s;display:inline-flex;align-items:center;gap:.5rem;align-self:flex-start;}
+.submit-btn:hover{background:var(--amber);}
+@media(max-width:780px){.contact-grid{grid-template-columns:1fr;gap:3rem;}.form-row{grid-template-columns:1fr;}}
+
+/* ── FOOTER ── */
+footer{background:var(--forest);border-top:1px solid rgba(45,189,110,.1);padding:5rem 5% 2rem;}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:4rem;max-width:1180px;margin:0 auto 4rem;padding-bottom:4rem;border-bottom:1px solid rgba(45,189,110,.07);}
+.footer-brand p{font-size:.82rem;color:rgba(240,236,224,.42);line-height:1.82;max-width:270px;margin:1rem 0 1.5rem;}
+.footer-socials{display:flex;gap:.6rem;}
+.fsoc{width:34px;height:34px;border-radius:50%;border:1px solid rgba(45,189,110,.18);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--jade);text-decoration:none;transition:all .25s;}
+.fsoc:hover{background:var(--jade);color:var(--ink);}
+.footer-col h4{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--cream);margin-bottom:1.5rem;}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.75rem;}
+.footer-col ul a{color:rgba(240,236,224,.42);text-decoration:none;font-size:.82rem;transition:color .25s;}
+.footer-col ul a:hover{color:var(--jade);}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;max-width:1180px;margin:0 auto;flex-wrap:wrap;gap:1rem;}
+.footer-bottom p,.fbot-links a{font-size:.73rem;color:rgba(240,236,224,.28);}
+.fbot-links{display:flex;gap:1.5rem;}
+.fbot-links a{text-decoration:none;transition:color .25s;}
+.fbot-links a:hover{color:var(--jade);}
+@media(max-width:880px){.footer-top{grid-template-columns:1fr 1fr;gap:2.5rem;}}
+@media(max-width:480px){.footer-top{grid-template-columns:1fr;}}
+
+/* ── LOADER ── */
+#loader{position:fixed;inset:0;background:var(--ink);z-index:100000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;transition:opacity .7s,visibility .7s;}
+#loader.hidden{opacity:0;visibility:hidden;}
+.ld-logo{font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:var(--cream);}
+.ld-logo span{color:var(--jade);}
+.ld-bar-wrap{width:220px;height:1px;background:rgba(45,189,110,.1);overflow:hidden;border-radius:1px;}
+.ld-bar-fill{height:100%;width:0%;background:var(--jade);transition:width .08s linear;border-radius:1px;}
+.ld-pct{font-size:.65rem;letter-spacing:.22em;color:rgba(240,236,224,.3);font-family:'DM Sans',sans-serif;}
+@keyframes ldBar{to{transform:translateX(0);}}
+#back-top{position:fixed;bottom:2rem;right:2rem;width:40px;height:40px;border-radius:50%;background:var(--jade);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:998;border:none;font-size:.95rem;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;}
+#back-top.show{opacity:1;transform:none;pointer-events:auto;}
+#back-top:hover{background:var(--amber);}
+</style>
+</head>
+<body>
+
+<div id="loader"><div class="ld-logo">Nox<span>us</span></div><div class="ld-bar-wrap"><div class="ld-bar-fill" id="ld-fill"></div></div><div class="ld-pct" id="ld-pct">Preparing experience…</div></div>
+
+<!-- CURSOR -->
+<div id="nx-dot"></div>
+<div id="nx-ch"></div>
+<div id="nx-cv"></div>
+
+<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="logo">Nox<span>us</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#technology">Technology</a></li>
+    <li><a href="#products">Products</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="#contact" class="nav-cta">Contact Us</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mob-close" onclick="toggleMenu()">✕</button>
+  <a href="#about" onclick="toggleMenu()">About</a>
+  <a href="#services" onclick="toggleMenu()">Services</a>
+  <a href="#technology" onclick="toggleMenu()">Technology</a>
+  <a href="#products" onclick="toggleMenu()">Products</a>
+  <a href="#team" onclick="toggleMenu()">Team</a>
+  <a href="#contact" onclick="toggleMenu()">Contact</a>
+</div>
+
+<!-- HERO STAGE -->
+<div id="hero-stage">
+<section id="hero">
+  <canvas id="eagle-seq"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><div class="pulse-dot"></div><span>Est. 2015 · Precision Agriculture</span></div>
+    <h1 class="hero-title">
+      <span class="ln"><span class="ln-i">Engineering</span></span>
+      <span class="ln"><span class="ln-i">the Future of</span></span>
+      <span class="ln"><span class="ln-i"><em>Agriculture</em></span></span>
+    </h1>
+    <p class="hero-sub">Noxus bridges cutting-edge biotechnology with sustainable farming practices — empowering growers worldwide to cultivate more, waste less, and grow smarter.</p>
+    <div class="hero-actions">
+      <a href="#services" class="btn-primary"><span>Explore Solutions</span><b> →</b></a>
+      <a href="#about" class="btn-secondary">Our Story ↓</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">98%</div><div class="lbl">Client Retention</div></div>
+    <div class="hero-stat"><div class="num">42+</div><div class="lbl">Countries</div></div>
+    <div class="hero-stat"><div class="num">4M+</div><div class="lbl">Acres Managed</div></div>
+  </div>
+  <div class="hero-scroll"><span>Scroll</span><div class="scroll-ln"></div></div>
+</section>
+</div><!-- /hero-stage -->
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span>Precision Farming</span><span class="sep">✦</span><span>AgriTech Innovation</span><span class="sep">✦</span><span>Smart Irrigation</span><span class="sep">✦</span><span>Soil Intelligence</span><span class="sep">✦</span><span>Drone Monitoring</span><span class="sep">✦</span><span>AI Crop Analytics</span><span class="sep">✦</span><span>Sustainable Growth</span><span class="sep">✦</span><span>Global Food Security</span><span class="sep">✦</span>
+    <span>Precision Farming</span><span class="sep">✦</span><span>AgriTech Innovation</span><span class="sep">✦</span><span>Smart Irrigation</span><span class="sep">✦</span><span>Soil Intelligence</span><span class="sep">✦</span><span>Drone Monitoring</span><span class="sep">✦</span><span>AI Crop Analytics</span><span class="sep">✦</span><span>Sustainable Growth</span><span class="sep">✦</span><span>Global Food Security</span><span class="sep">✦</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-visual reveal-l">
+      <div class="about-canvas-wrap">
+        <canvas id="about-canvas"></canvas>
+      </div>
+      <div class="about-year-badge">
+        <div class="yr">2015</div>
+        <p>Founded with a mission to transform how the world feeds itself.</p>
+      </div>
+    </div>
+    <div class="about-text reveal-r">
+      <p class="section-label">Who We Are</p>
+      <h2 class="section-title" style="margin-top:.8rem">Rooted in <em>Science</em>,<br>Driven by <strong>Purpose</strong></h2>
+      <p style="margin-top:1.8rem">Noxus is a global agro-technology company headquartered across three continents. We develop intelligent systems that empower farmers, agribusinesses, and governments to make data-driven decisions that increase yield, reduce resource waste, and protect natural ecosystems.</p>
+      <p>Our multidisciplinary team of agronomists, data scientists, engineers, and ecologists work in harmony — creating solutions that are as deeply scientific as they are deeply humane.</p>
+      <div class="about-pillars">
+        <div class="pillar">
+          <img class="pillar-img" src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&q=70" alt="Sustainability"/>
+          <h4>Sustainability</h4><p>Carbon-neutral since 2021 with net-zero targets for all clients.</p>
+        </div>
+        <div class="pillar">
+          <img class="pillar-img" src="https://images.unsplash.com/photo-1576086213369-97a306d36557?w=400&q=70" alt="Biotech R&D"/>
+          <h4>Biotech R&amp;D</h4><p>24 active patents in plant genomics and precision nutrient delivery.</p>
+        </div>
+        <div class="pillar">
+          <img class="pillar-img" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=70" alt="IoT Networks"/>
+          <h4>IoT Networks</h4><p>Real-time sensor arrays covering over 4 million acres globally.</p>
+        </div>
+        <div class="pillar">
+          <img class="pillar-img" src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&q=70" alt="AI Systems"/>
+          <h4>AI Systems</h4><p>ML models trained on 10+ years of crop and climate data.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="services-header reveal">
+    <div>
+      <p class="section-label">What We Do</p>
+      <h2 class="section-title" style="margin-top:.8rem">End-to-End <em>Agricultural</em><br><strong>Intelligence</strong></h2>
+    </div>
+    <p style="max-width:360px;font-size:.86rem;color:rgba(240,236,224,.48);line-height:1.82">From soil biology to satellite monitoring, our integrated suite covers every dimension of modern farming.</p>
+  </div>
+  <div class="services-grid reveal">
+    <div class="svc-card">
+      <img class="svc-img" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=700&q=75" alt="Satellite Monitoring"/>
+      <div class="svc-body"><span class="svc-num">01</span>
+        <h3>Satellite Crop Monitoring</h3>
+        <p>High-resolution multispectral imaging provides weekly NDVI maps, stress identification, and growth forecasting across entire farm portfolios.</p>
+        <div class="svc-arrow">→</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <img class="svc-img" src="https://images.unsplash.com/photo-1560493676-04071c5f467b?w=700&q=75" alt="Smart Irrigation"/>
+      <div class="svc-body"><span class="svc-num">02</span>
+        <h3>Smart Irrigation Systems</h3>
+        <p>AI-driven valve control combined with soil moisture sensors and weather forecasting reduces water consumption by up to 45%.</p>
+        <div class="svc-arrow">→</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <img class="svc-img" src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=700&q=75" alt="Soil Lab"/>
+      <div class="svc-body"><span class="svc-num">03</span>
+        <h3>Soil Intelligence Lab</h3>
+        <p>Comprehensive soil microbiome analysis, nutrient profiling, and custom amendment recommendations to build productive soil ecosystems.</p>
+        <div class="svc-arrow">→</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <img class="svc-img" src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=700&q=75" alt="Drone Spraying"/>
+      <div class="svc-body"><span class="svc-num">04</span>
+        <h3>Drone Precision Spraying</h3>
+        <p>GPS-guided agricultural drones deliver targeted applications with 90% less chemical usage than conventional broadcast methods.</p>
+        <div class="svc-arrow">→</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <img class="svc-img" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=700&q=75" alt="Yield Analytics"/>
+      <div class="svc-body"><span class="svc-num">05</span>
+        <h3>Predictive Yield Analytics</h3>
+        <p>Our yield engine integrates historical data, weather models, and satellite indices to project harvest outcomes 8–12 weeks in advance.</p>
+        <div class="svc-arrow">→</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <img class="svc-img" src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=700&q=75" alt="Supply Chain"/>
+      <div class="svc-body"><span class="svc-num">06</span>
+        <h3>Supply Chain Integration</h3>
+        <p>Farm-to-fork traceability powered by blockchain ensures quality assurance, regulatory compliance, and transparent sustainability reporting.</p>
+        <div class="svc-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="stats-grid">
+    <div class="stat-cell reveal"><span class="stat-num">4.2M<span class="stat-sfx">+</span></span><span class="stat-lbl">Acres Under Management</span></div>
+    <div class="stat-cell reveal"><span class="stat-num">42<span class="stat-sfx">+</span></span><span class="stat-lbl">Countries Served</span></div>
+    <div class="stat-cell reveal"><span class="stat-num">38<span class="stat-sfx">%</span></span><span class="stat-lbl">Average Yield Increase</span></div>
+    <div class="stat-cell reveal"><span class="stat-num">$2.8<span class="stat-sfx">B</span></span><span class="stat-lbl">Farmer Revenue Generated</span></div>
+  </div>
+</section>
+
+<!-- TECHNOLOGY -->
+<section id="technology">
+  <div class="tech-split">
+    <div class="reveal-l">
+      <p class="section-label">Core Technology</p>
+      <h2 class="section-title" style="margin-top:.8rem">The Intelligence<br>Behind the <em>Harvest</em></h2>
+      <p style="margin-top:1.5rem;font-size:.9rem;color:rgba(240,236,224,.52);line-height:1.88">Noxus platforms run on a unified data architecture connecting physical sensors, satellites, biological labs, and AI into one cohesive intelligence layer.</p>
+      <div class="tech-tags" style="margin-top:1.8rem">
+        <span class="tech-tag">Machine Learning</span><span class="tech-tag">Computer Vision</span>
+        <span class="tech-tag">Edge IoT</span><span class="tech-tag">Satellite API</span>
+        <span class="tech-tag">Genomics</span><span class="tech-tag">Blockchain</span>
+        <span class="tech-tag">Digital Twin</span><span class="tech-tag">Cloud Native</span>
+      </div>
+      <div class="tech-list">
+        <div class="tech-item">
+          <img class="tech-item-img" src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=80&q=70" alt="AI"/>
+          <div><h4>NoxBrain AI Engine</h4><p>Proprietary neural network trained on 1.2B crop data points delivering real-time actionable recommendations.</p></div>
+        </div>
+        <div class="tech-item">
+          <img class="tech-item-img" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=80&q=70" alt="Sensor"/>
+          <div><h4>FieldNet Sensor Array</h4><p>Wireless mesh of soil, weather, and canopy sensors providing 15-minute resolution coverage across entire farms.</p></div>
+        </div>
+        <div class="tech-item">
+          <img class="tech-item-img" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=80&q=70" alt="Satellite"/>
+          <div><h4>GeoVision Platform</h4><p>Multi-source satellite fusion combining Sentinel-2, Landsat, and PlanetScope for unmatched spatial accuracy.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="tech-globe-wrap reveal-r">
+      <canvas id="tech-canvas"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div style="max-width:1180px;margin:0 auto" class="reveal">
+    <p class="section-label">Our Products</p>
+    <h2 class="section-title" style="margin-top:.8rem">Hardware &amp; Software<br>Built for the <em>Field</em></h2>
+  </div>
+  <div class="products-grid">
+    <div class="prod-card reveal">
+      <img class="prod-img" src="https://images.unsplash.com/photo-1625246333195-cbf7dc365b4e?w=700&q=80" alt="FieldNode Sensor"/>
+      <div class="prod-body">
+        <span class="prod-tag">Hardware</span>
+        <h3>FieldNode Pro Sensor</h3>
+        <p>Industrial-grade soil &amp; canopy sensor with 6-month battery life, 4G/LoRa connectivity, and IP68 weatherproofing.</p>
+        <ul class="prod-feats">
+          <li>NPK + moisture + temperature + EC</li><li>15-minute transmission interval</li>
+          <li>Solar-assisted charging</li><li>OTA firmware updates</li>
+        </ul>
+      </div>
+      <div class="prod-footer"><span class="prod-price">$349 / unit</span><button class="prod-btn">Learn More</button></div>
+    </div>
+    <div class="prod-card reveal">
+      <img class="prod-img" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=700&q=80" alt="NoxDash Platform"/>
+      <div class="prod-body">
+        <span class="prod-tag">Software</span>
+        <h3>NoxDash Platform</h3>
+        <p>Unified farm management dashboard with AI recommendations, satellite layers, and multi-farm portfolio management.</p>
+        <ul class="prod-feats">
+          <li>Unlimited farm profiles</li><li>NoxBrain AI advisory engine</li>
+          <li>Satellite NDVI / thermal layers</li><li>API + ERP integrations</li>
+        </ul>
+      </div>
+      <div class="prod-footer"><span class="prod-price">$199 / mo</span><button class="prod-btn">Free Trial</button></div>
+    </div>
+    <div class="prod-card reveal">
+      <img class="prod-img" src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=700&q=80" alt="AeroCrop Drone"/>
+      <div class="prod-body">
+        <span class="prod-tag">Drone Services</span>
+        <h3>AeroCrop Sprayer X8</h3>
+        <p>Octacopter precision sprayer with 20L tank, RTK GPS, obstacle avoidance, and autonomous mission planning software.</p>
+        <ul class="prod-feats">
+          <li>20 acres/hour coverage</li><li>Sub-5cm GPS accuracy</li>
+          <li>AI obstacle avoidance</li><li>Remote fleet management</li>
+        </ul>
+      </div>
+      <div class="prod-footer"><span class="prod-price">$12,500</span><button class="prod-btn">Request Demo</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- MISSION -->
+<section id="mission">
+  <canvas id="mission-canvas"></canvas>
+  <div class="mission-inner reveal">
+    <p class="section-label" style="justify-content:center">Our Philosophy</p>
+    <blockquote class="mission-quote" style="margin-top:1.5rem">"The Earth is not a resource to be consumed — it is a living system to be <em>cultivated with intelligence</em> and returned to its fullest potential."</blockquote>
+    <p class="mission-author">— Arjun Mehra, Founder &amp; CEO, Noxus</p>
+    <div style="margin-top:3rem;display:flex;gap:1.2rem;justify-content:center;flex-wrap:wrap">
+      <a href="#contact" class="btn-primary"><span>Partner With Us</span><b> →</b></a>
+      <a href="#services" class="btn-secondary">Our Services</a>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div style="max-width:1180px;margin:0 auto;text-align:center" class="reveal">
+    <p class="section-label" style="justify-content:center">The People</p>
+    <h2 class="section-title" style="margin-top:.8rem">Minds Behind the <em>Mission</em></h2>
+  </div>
+  <div class="team-grid">
+    <div class="team-card reveal">
+      <img class="team-photo" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&q=80" alt="Arjun Mehra"/>
+      <div class="team-overlay"></div>
+      <div class="team-info">
+        <div class="team-name">Arjun Mehra</div><div class="team-role">Founder &amp; CEO</div>
+        <p class="team-bio">Former ISRO agri-satellite researcher with 20 years in precision agriculture policy.</p>
+        <div class="team-socials"><a href="#">in</a><a href="#">𝕏</a></div>
+      </div>
+    </div>
+    <div class="team-card reveal">
+      <img class="team-photo" src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=500&q=80" alt="Dr Priya Lal"/>
+      <div class="team-overlay"></div>
+      <div class="team-info">
+        <div class="team-name">Dr. Priya Lal</div><div class="team-role">Chief Science Officer</div>
+        <p class="team-bio">PhD Plant Genomics, Cambridge. 14 patents in soil microbiome technology.</p>
+        <div class="team-socials"><a href="#">in</a><a href="#">𝕏</a></div>
+      </div>
+    </div>
+    <div class="team-card reveal">
+      <img class="team-photo" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=500&q=80" alt="Marcus Osei"/>
+      <div class="team-overlay"></div>
+      <div class="team-info">
+        <div class="team-name">Marcus Osei</div><div class="team-role">CTO</div>
+        <p class="team-bio">Ex-Google Brain. Architected NoxBrain AI Engine and FieldNet edge computing infrastructure.</p>
+        <div class="team-socials"><a href="#">in</a><a href="#">𝕏</a></div>
+      </div>
+    </div>
+    <div class="team-card reveal">
+      <img class="team-photo" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&q=80" alt="Sofia Martín"/>
+      <div class="team-overlay"></div>
+      <div class="team-info">
+        <div class="team-name">Sofia Martín</div><div class="team-role">Chief Growth Officer</div>
+        <p class="team-bio">Led expansion into 30+ countries. Former VP at Syngenta and World Bank advisor.</p>
+        <div class="team-socials"><a href="#">in</a><a href="#">𝕏</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div style="text-align:center;max-width:580px;margin:0 auto" class="reveal">
+    <p class="section-label" style="justify-content:center">Testimonials</p>
+    <h2 class="section-title" style="margin-top:.8rem">Trusted by Growers <em>Worldwide</em></h2>
+  </div>
+  <div class="testi-wrap">
+    <div class="testi-slide active">
+      <p class="testi-text">"Since adopting the NoxDash platform, our water usage dropped 41% in the first season. The AI recommendations were spot-on, and our yield went up 34%. It's like having the world's best agronomist on call 24/7."</p>
+      <div class="testi-author">
+        <img class="testi-av" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80" alt="Carlos"/>
+        <div><div class="testi-name">Carlos Mendez</div><div class="testi-co">Mendez Farms, Sonora, Mexico</div></div>
+      </div>
+    </div>
+    <div class="testi-slide">
+      <p class="testi-text">"The FieldNode sensors gave us granular data we never had before. We identified a nitrogen deficiency zone costing us 15% of soy yield annually. Noxus paid for itself in the very first harvest."</p>
+      <div class="testi-author">
+        <img class="testi-av" src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=100&q=80" alt="Amara"/>
+        <div><div class="testi-name">Amara Diallo</div><div class="testi-co">Diallo AgriGroup, Mali</div></div>
+      </div>
+    </div>
+    <div class="testi-slide">
+      <p class="testi-text">"We deploy Noxus drone services across 18,000 acres of rice paddies. The precision is extraordinary — pesticide costs fell 62% while canopy health scores improved every single quarter."</p>
+      <div class="testi-author">
+        <img class="testi-av" src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&q=80" alt="Nguyen"/>
+        <div><div class="testi-name">Nguyen Thi Lan</div><div class="testi-co">Mekong Agricultural Co., Vietnam</div></div>
+      </div>
+    </div>
+    <div class="testi-dots">
+      <div class="testi-dot active" onclick="goT(0)"></div>
+      <div class="testi-dot" onclick="goT(1)"></div>
+      <div class="testi-dot" onclick="goT(2)"></div>
+    </div>
+    <div class="testi-ctrls">
+      <button class="testi-btn" onclick="prevT()">←</button>
+      <button class="testi-btn" onclick="nextT()">→</button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-glow"></div>
+  <div class="cta-inner reveal">
+    <p class="section-label" style="justify-content:center">Get Started</p>
+    <h2 class="section-title" style="margin-top:.8rem">Ready to <em>Transform</em><br>Your Farm?</h2>
+    <p style="margin-top:1.2rem">Join 6,000+ growers and agribusinesses already using Noxus to grow smarter. Start with a free 30-day trial — no credit card required.</p>
+    <div class="cta-form">
+      <input type="email" class="cta-input" placeholder="Enter your email address"/>
+      <button class="btn-primary"><span>Start Free Trial</span></button>
+    </div>
+    <p style="font-size:.7rem;color:rgba(240,236,224,.28);margin-top:.9rem">No commitment. Cancel anytime. 30-day full-feature access.</p>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="reveal" style="text-align:center;max-width:580px;margin:0 auto">
+    <p class="section-label" style="justify-content:center">Contact</p>
+    <h2 class="section-title" style="margin-top:.8rem">Let's Grow <em>Together</em></h2>
+  </div>
+  <div class="contact-grid">
+    <div class="reveal-l">
+      <h3>Reach Our Team</h3>
+      <p>Whether you're an individual farmer, a co-operative, or an enterprise agribusiness — our team is here to find the right solution for you.</p>
+      <div class="c-details">
+        <div class="c-detail">
+          <img class="c-icon" src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=80&q=70" alt="HQ"/>
+          <div class="c-text"><h4>Headquarters</h4><p>Noxus Tower, 14th Floor, Bengaluru 560034, India</p></div>
+        </div>
+        <div class="c-detail">
+          <img class="c-icon" src="https://images.unsplash.com/photo-1534536281715-e28d76689b4d?w=80&q=70" alt="Phone"/>
+          <div class="c-text"><h4>Phone</h4><p>+91 80 4567 8900</p></div>
+        </div>
+        <div class="c-detail">
+          <img class="c-icon" src="https://images.unsplash.com/photo-1596526131083-e8c633c948d2?w=80&q=70" alt="Email"/>
+          <div class="c-text"><h4>Email</h4><p><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="59313c353536193736212c2a77383e">[email&#160;protected]</a></p></div>
+        </div>
+        <div class="c-detail">
+          <img class="c-icon" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=80&q=70" alt="Global"/>
+          <div class="c-text"><h4>Global Offices</h4><p>Nairobi · Amsterdam · São Paulo · Singapore</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal-r">
+      <div class="contact-form">
+        <div class="form-row">
+          <div class="fg"><label>Full Name</label><input class="fc" placeholder="John Appleseed"/></div>
+          <div class="fg"><label>Email</label><input class="fc" placeholder="you@example.com"/></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Company</label><input class="fc" placeholder="Farm / Organization"/></div>
+          <div class="fg"><label>Interest</label>
+            <select class="fc" style="cursor:pointer">
+              <option>Select a service…</option><option>Satellite Monitoring</option>
+              <option>Smart Irrigation</option><option>Drone Services</option>
+              <option>Soil Lab Analysis</option><option>NoxDash Platform</option>
+              <option>Enterprise Partnership</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><label>Message</label><textarea class="fc" placeholder="Tell us about your operation and how we can help…"></textarea></div>
+        <button class="submit-btn">Send Message →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="#" class="logo">Nox<span>us</span></a>
+      <p>Engineering the future of global agriculture through intelligent, sustainable technology that works for the planet and for people.</p>
+      <div class="footer-socials">
+        <a href="#" class="fsoc">in</a><a href="#" class="fsoc">𝕏</a>
+        <a href="#" class="fsoc">f</a><a href="#" class="fsoc">yt</a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Solutions</h4><ul>
+      <li><a href="#">Satellite Monitoring</a></li><li><a href="#">Smart Irrigation</a></li>
+      <li><a href="#">Drone Services</a></li><li><a href="#">Soil Intelligence</a></li>
+      <li><a href="#">Yield Analytics</a></li><li><a href="#">Supply Chain</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>Company</h4><ul>
+      <li><a href="#">About Noxus</a></li><li><a href="#">Our Technology</a></li>
+      <li><a href="#">Impact Report</a></li><li><a href="#">Careers</a></li>
+      <li><a href="#">Press</a></li><li><a href="#">Contact</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>Resources</h4><ul>
+      <li><a href="#">Developer API</a></li><li><a href="#">Case Studies</a></li>
+      <li><a href="#">Research Papers</a></li><li><a href="#">Blog</a></li>
+      <li><a href="#">Webinars</a></li><li><a href="#">Help Center</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Noxus Technologies Pvt. Ltd. All rights reserved.</p>
+    <div class="fbot-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Cookie Policy</a></div>
+  </div>
+</footer>
+
+<script>
+/* ── LOADER ── */
+/* loader is now controlled by eagle preload — see eagle sequence section */
+
+/* ── CURSOR — clean precise crosshair dot ── */
+const dotEl=document.getElementById('nx-dot');
+const chEl=document.getElementById('nx-ch');
+const cvEl=document.getElementById('nx-cv');
+
+document.addEventListener('mousemove',e=>{
+  const x=e.clientX+'px', y=e.clientY+'px';
+  dotEl.style.left=x; dotEl.style.top=y;
+  chEl.style.left=x;  chEl.style.top=y;
+  cvEl.style.left=x;  cvEl.style.top=y;
+});
+
+const hovTargets='a,button,.svc-card,.prod-card,.team-card,.pillar,.tech-item,.testi-btn,.prod-btn,.submit-btn,.hamburger';
+document.querySelectorAll(hovTargets).forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cur-hov'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cur-hov'));
+});
+document.addEventListener('mousedown',()=>document.body.classList.add('cur-click'));
+document.addEventListener('mouseup',()=>document.body.classList.remove('cur-click'));
+
+/* ── NAV ── */
+window.addEventListener('scroll',()=>{
+  document.getElementById('navbar').classList.toggle('scrolled',scrollY>60);
+  document.getElementById('back-top').classList.toggle('show',scrollY>400);
+});
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');}
+
+/* ── REVEAL ── */
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');});},{threshold:.1});
+document.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach(el=>obs.observe(el));
+
+/* ── PARALLAX HERO — fades text as eagle sequence plays ── */
+window.addEventListener('scroll',()=>{
+  const stage=document.getElementById('hero-stage');
+  if(!stage) return;
+  const stageH=stage.offsetHeight-innerHeight;
+  const scrolled=Math.max(0,-stage.getBoundingClientRect().top);
+  const t=Math.min(1,scrolled/stageH);
+  const hc=document.querySelector('.hero-content');
+  if(hc){
+    // text drifts up and fades as sequence plays beyond 60%
+    const fade=Math.max(0,1-((t-.35)/.45));
+    if(t>.35){hc.style.opacity=fade;hc.style.transform=`translateY(${(t-.35)*60}px)`;}
+    else{hc.style.opacity=1;hc.style.transform='';}
+  }
+},{ passive:true });
+
+/* ── TESTIMONIALS ── */
+let ti=0;
+const ts=document.querySelectorAll('.testi-slide'),td=document.querySelectorAll('.testi-dot');
+function goT(n){ti=n;ts.forEach((s,i)=>s.classList.toggle('active',i===n));td.forEach((d,i)=>d.classList.toggle('active',i===n));}
+function nextT(){goT((ti+1)%ts.length);}function prevT(){goT((ti-1+ts.length)%ts.length);}
+setInterval(nextT,5500);
+
+/* ══════════════════════════════════════════════
+   HERO — Real Eagle WebP Sequence (scroll-to-fly)
+   ══════════════════════════════════════════════ */
+(()=>{
+  const TOTAL = 192;
+  const src = i => `eagle-frames/f${String(i).padStart(3,'0')}.webp`;
+  const frames = new Array(TOTAL).fill(null);
+  let loaded = 0, curIdx = 0, rafPend = false;
+
+  const seqCv = document.getElementById('eagle-seq');
+  const sCtx  = seqCv.getContext('2d');
+
+  function resizeSeq(){
+    seqCv.width  = window.innerWidth;
+    seqCv.height = window.innerHeight;
+    if(frames[curIdx]) renderFrame(curIdx);
+  }
+  resizeSeq();
+  window.addEventListener('resize', resizeSeq);
+
+  function renderFrame(idx){
+    if(!frames[idx]) return;
+    const img = frames[idx];
+    const cw = seqCv.width, ch = seqCv.height;
+    /* Cover-fill — keep eagle large and cinematic */
+    const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+    const dw = img.naturalWidth  * scale;
+    const dh = img.naturalHeight * scale;
+    const dx = (cw - dw) * 0.5; /* centred — eagle fills full width */
+    const dy = (ch - dh) * 0.5;
+    sCtx.clearRect(0, 0, cw, ch);
+    sCtx.drawImage(img, dx, dy, dw, dh);
+  }
+
+  function scheduleRender(idx){
+    curIdx = idx;
+    if(!rafPend){
+      rafPend = true;
+      requestAnimationFrame(()=>{ rafPend=false; renderFrame(curIdx); });
+    }
+  }
+
+  /* ── Loader / preload ── */
+  const fillEl = document.getElementById('ld-fill');
+  const pctEl  = document.getElementById('ld-pct');
+  const loader = document.getElementById('loader');
+
+  function onFrameLoad(i, ok){
+    loaded++;
+    const pct = Math.round(loaded / TOTAL * 100);
+    if(fillEl) fillEl.style.width = pct + '%';
+    if(pctEl)  pctEl.textContent  = `Loading ${pct}%`;
+    if(i === 0 && ok) renderFrame(0);
+    if(loaded === TOTAL){
+      setTimeout(()=>{ if(loader) loader.classList.add('hidden'); }, 400);
+    }
+  }
+
+  for(let i = 0; i < TOTAL; i++){
+    const img = new Image(), ii = i;
+    img.onload  = ()=>{ frames[ii] = img; onFrameLoad(ii, true);  };
+    img.onerror = ()=>{ onFrameLoad(ii, false); };
+    img.src = src(i);
+  }
+
+  /* ── Scroll → frame mapping ── */
+  const stage = document.getElementById('hero-stage');
+
+  window.addEventListener('scroll', ()=>{
+    if(!stage) return;
+    const stageH  = stage.offsetHeight - window.innerHeight;
+    const scrolled = Math.max(0, -stage.getBoundingClientRect().top);
+    const t   = Math.min(1, scrolled / stageH);
+    const idx = Math.min(TOTAL - 1, Math.floor(t * TOTAL));
+    if(idx !== curIdx && frames[idx]) scheduleRender(idx);
+    else if(idx !== curIdx) curIdx = idx; /* queue for when frame loads */
+  }, { passive: true });
+})();
+
+/* ── THREE: ABOUT PLANT ── */
+(()=>{
+  const cv=document.getElementById('about-canvas');
+  if(!cv)return;
+  const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+  ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.setClearColor(0,0);ren.setSize(cv.clientWidth,cv.clientHeight);
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(48,cv.clientWidth/cv.clientHeight,.1,100);
+  cam.position.set(0,1,16);cam.lookAt(0,0,0);
+
+  const stemMat=new THREE.MeshPhongMaterial({color:0x2e8840,emissive:0x0c2a12,shininess:55});
+  const leafMat=new THREE.MeshPhongMaterial({color:0x22b050,emissive:0x082010,shininess:38,side:THREE.DoubleSide,transparent:true,opacity:.93});
+  const darkLeafMat=new THREE.MeshPhongMaterial({color:0x188038,emissive:0x051808,shininess:30,side:THREE.DoubleSide,transparent:true,opacity:.88});
+  const potMat=new THREE.MeshPhongMaterial({color:0x8b4513,emissive:0x2a0e00,shininess:35});
+  const soilMat=new THREE.MeshPhongMaterial({color:0x2a1806,emissive:0x0d0500});
+
+  const plant=new THREE.Group();
+
+  // Main stem — straight, thicker
+  plant.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(.1,.2,8,12),stemMat),{position:new THREE.Vector3(0,.5,0)}));
+
+  // Helper: create a single leaf as a scaled ellipsoid
+  function mkLeaf(mat,px,py,pz,rotX,rotY,rotZ,sx,sy,sz){
+    const geo=new THREE.SphereGeometry(1,14,10);
+    geo.scale(sx,sy,sz);
+    const m=new THREE.Mesh(geo,mat);
+    m.position.set(px,py,pz);m.rotation.set(rotX,rotY,rotZ);
+    return m;
+  }
+
+  // Large basal leaves
+  const basePairs=[[1.8,.2,0, .15,0,-.55, 1.5,.18,2.2],[-1.8,.2,0, .15,0,.55, 1.5,.18,2.2],[0,.2,1.8, .15,0,.05, 1.5,.18,2.2],[0,.2,-1.8, .15,Math.PI,.05, 1.5,.18,2.2]];
+  basePairs.forEach(([px,py,pz,rx,ry,rz,sx,sy,sz])=>plant.add(mkLeaf(darkLeafMat,px,py,pz,rx,ry,rz,sx,sy,sz)));
+
+  // Mid-stem branches + leaves (4 pairs)
+  const mids=[[52,1.0,2.6],[- 52,1.8,2.5],[68,2.6,2.2],[-65,2.2,2.4]];
+  mids.forEach(([angle,yBase,brLen])=>{
+    const rad=angle*Math.PI/180;
+    const bx=Math.sin(rad)*brLen*.42,bz=Math.cos(rad)*brLen*.12;
+    const tipX=Math.sin(rad)*brLen,tipY=yBase+brLen*.55,tipZ=Math.cos(rad)*brLen*.18;
+    // branch
+    const br=new THREE.Mesh(new THREE.CylinderGeometry(.038,.08,brLen,8),stemMat);
+    br.position.set(bx*.48,yBase+brLen*.25,bz*.48);
+    br.rotation.z=-rad*.7;br.rotation.y=rad;plant.add(br);
+    // leaf cluster at tip
+    plant.add(mkLeaf(leafMat, tipX,tipY,tipZ, .1,rad,rad*.3, 1.2,.22,1.5));
+    plant.add(mkLeaf(leafMat, tipX+.2,tipY+.1,tipZ+.1, 0,0,.2, .9,.2,1.1));
+  });
+
+  // Upper whorl leaves
+  for(let i=0;i<6;i++){
+    const a=i/6*Math.PI*2,r=1.5,y=4;
+    plant.add(mkLeaf(leafMat, Math.cos(a)*r,y+.3,Math.sin(a)*r*.3, 0,a,.38+Math.random()*.25, 1.2,.2,1.55));
+  }
+
+  // Crown — long drooping center leaf
+  plant.add(mkLeaf(leafMat,0,5.2,0, .08,0,0, .7,.17,2.4));
+
+  // Short petiole leaves on upper stem
+  for(let i=0;i<5;i++){
+    const a=(i/5*360+15)*Math.PI/180,y=-1.2+i*1.1;
+    const bx=Math.cos(a)*.22,bz=Math.sin(a)*.22;
+    const sl=new THREE.Mesh(new THREE.CylinderGeometry(.022,.045,1,6),stemMat);
+    sl.position.set(bx,y,bz);sl.rotation.z=-Math.cos(a)*.9;sl.rotation.x=-Math.sin(a)*.4;plant.add(sl);
+    plant.add(mkLeaf(leafMat, Math.cos(a)*.9,y+.65,Math.sin(a)*.9, 0,a,Math.cos(a)*.5, .72,.17,.95));
+  }
+
+  // Pot body
+  plant.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(1.65,1.2,2.5,20),potMat),{position:new THREE.Vector3(0,-3.5,0)}));
+  // Pot rim torus
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(1.65,.1,10,28),new THREE.MeshPhongMaterial({color:0x6b3410,emissive:0x1a0800}));
+  rim.rotation.x=Math.PI/2;rim.position.y=-2.25;plant.add(rim);
+  // Soil surface
+  plant.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(1.55,.01,.22,18),soilMat),{position:new THREE.Vector3(0,-2.3,0)}));
+  // Roots
+  for(let i=0;i<5;i++){const a=i/5*Math.PI*2;const rr=new THREE.Mesh(new THREE.CylinderGeometry(.022,.04,.75,6),new THREE.MeshPhongMaterial({color:0x3d2010,emissive:0x180800}));rr.position.set(Math.cos(a)*.7,-4.5,Math.sin(a)*.7);rr.rotation.z=Math.cos(a)*.85;rr.rotation.x=Math.sin(a)*.5;plant.add(rr);}
+
+  plant.position.y=-1;sc.add(plant);
+
+  // Floating spores/pollen particles
+  const fpg=new THREE.BufferGeometry();const fN=80,fpp=new Float32Array(fN*3);
+  for(let i=0;i<fN;i++){fpp[i*3]=(Math.random()-.5)*14;fpp[i*3+1]=(Math.random()-.5)*14;fpp[i*3+2]=(Math.random()-.5)*6;}
+  fpg.setAttribute('position',new THREE.BufferAttribute(fpp,3));
+  sc.add(new THREE.Points(fpg,new THREE.PointsMaterial({color:0x4ddd8e,size:.065,transparent:true,opacity:.55})));
+
+  // Lighting
+  sc.add(Object.assign(new THREE.DirectionalLight(0x5ddd8e,2.2),{position:new THREE.Vector3(6,10,8)}));
+  sc.add(Object.assign(new THREE.DirectionalLight(0xffd080,.7),{position:new THREE.Vector3(-5,3,4)}));
+  sc.add(Object.assign(new THREE.DirectionalLight(0x2dbd6e,.5),{position:new THREE.Vector3(0,-5,-3)}));
+  sc.add(new THREE.AmbientLight(0x0a2015,.9));
+
+  window.addEventListener('resize',()=>{ren.setSize(cv.clientWidth,cv.clientHeight);cam.aspect=cv.clientWidth/cv.clientHeight;cam.updateProjectionMatrix();});
+  let t=0;
+  (function anim(){
+    requestAnimationFrame(anim);t+=.007;
+    plant.rotation.y=Math.sin(t*.28)*.35;plant.position.y=-1+Math.sin(t*.45)*.12;
+    ren.render(sc,cam);
+  })();
+})();
+
+/* ── THREE: TECH GLOBE ── */
+(()=>{
+  const cv=document.getElementById('tech-canvas');if(!cv)return;
+  const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+  ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.setClearColor(0,0);ren.setSize(cv.clientWidth,cv.clientHeight);
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(55,cv.clientWidth/cv.clientHeight,.1,100);cam.position.set(0,0,18);
+  sc.add(new THREE.Mesh(new THREE.SphereGeometry(4,32,32),new THREE.MeshPhongMaterial({color:0x0a2e14,emissive:0x031008,shininess:50,transparent:true,opacity:.88})));
+  sc.add(new THREE.Mesh(new THREE.SphereGeometry(4.06,18,18),new THREE.MeshPhongMaterial({color:0x2dbd6e,wireframe:true,transparent:true,opacity:.22})));
+  [[5.5,.13,0,0,0x2dbd6e],[6.6,.08,.28,.12,0xc9a84c],[7.6,.055,.58,.38,0x2dbd6e]].forEach(([r,t2,rx,rz,cl])=>{
+    const m=new THREE.Mesh(new THREE.TorusGeometry(r,t2,8,80),new THREE.MeshPhongMaterial({color:cl,transparent:true,opacity:.55,side:THREE.DoubleSide}));m.rotation.x=rx;m.rotation.z=rz;sc.add(m);
+  });
+  const sats=[];for(let i=0;i<9;i++){const s=new THREE.Mesh(new THREE.SphereGeometry(.18,8,8),new THREE.MeshPhongMaterial({color:i%2===0?0x2dbd6e:0xffd060,emissive:i%2===0?0x0a3d1f:0x3d2a00}));sc.add(s);sats.push({m:s,sp:.38+Math.random()*.55,a:Math.random()*Math.PI*2,r:5.5+Math.random()*2.8,tl:Math.random()*Math.PI*.5});}
+  const pl=new THREE.PointLight(0x2dbd6e,2.5,30);pl.position.set(6,6,6);sc.add(pl);
+  sc.add(Object.assign(new THREE.PointLight(0xffd060,.9,20),{position:new THREE.Vector3(-4,3,5)}));
+  sc.add(new THREE.AmbientLight(0x0a1f0e,.4));
+  let hmx=0,hmy=0;
+  cv.parentElement.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();hmx=(e.clientX-r.left)/r.width*2-1;hmy=-((e.clientY-r.top)/r.height*2-1);});
+  window.addEventListener('resize',()=>{ren.setSize(cv.clientWidth,cv.clientHeight);cam.aspect=cv.clientWidth/cv.clientHeight;cam.updateProjectionMatrix();});
+  let t=0;const gb=sc.children[0];
+  (function anim(){requestAnimationFrame(anim);t+=.005;gb.rotation.y=t*.15;sats.forEach(s=>{s.a+=s.sp*.012;s.m.position.set(Math.cos(s.a)*s.r*Math.cos(s.tl),Math.sin(s.a)*s.r*.6,Math.cos(s.a)*s.r*Math.sin(s.tl));});cam.position.x+=(hmx*3-cam.position.x)*.05;cam.position.y+=(hmy*2-cam.position.y)*.05;cam.lookAt(0,0,0);ren.render(sc,cam);})();
+})();
+
+/* ── THREE: MISSION ── */
+(()=>{
+  const cv=document.getElementById('mission-canvas');if(!cv)return;
+  const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+  ren.setPixelRatio(Math.min(devicePixelRatio,1.5));ren.setClearColor(0,0);ren.setSize(cv.clientWidth,cv.clientHeight);
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(70,cv.clientWidth/cv.clientHeight,.1,100);cam.position.z=20;
+  const pg=new THREE.BufferGeometry();const N=1300,pp=new Float32Array(N*3),pv=new Float32Array(N);
+  for(let i=0;i<N;i++){pp[i*3]=(Math.random()-.5)*52;pp[i*3+1]=(Math.random()-.5)*32;pp[i*3+2]=(Math.random()-.5)*22;pv[i]=.007+Math.random()*.016;}
+  pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
+  const pts=new THREE.Points(pg,new THREE.PointsMaterial({color:0x2dbd6e,size:.11,transparent:true,opacity:.45,sizeAttenuation:true}));
+  sc.add(pts);sc.add(new THREE.AmbientLight(0x0a1f0e,1));
+  let t=0;
+  (function anim(){requestAnimationFrame(anim);t+=.004;const p=pg.attributes.position.array;for(let i=0;i<N;i++){p[i*3+1]+=pv[i];if(p[i*3+1]>16)p[i*3+1]=-16;}pg.attributes.position.needsUpdate=true;pts.rotation.z=t*.025;ren.render(sc,cam);})();
+  window.addEventListener('resize',()=>{ren.setSize(cv.clientWidth,cv.clientHeight);cam.aspect=cv.clientWidth/cv.clientHeight;cam.updateProjectionMatrix();});
+})();
+</script>
+</body>
+</html>
